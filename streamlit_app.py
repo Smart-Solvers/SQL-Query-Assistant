@@ -1,443 +1,379 @@
-# import streamlit as st
-# import pandas as pd
-# import plotly.express as px
-# from appp.database import get_database_connection
-# from appp.services.query_service import QueryService
-# from appp.services.llm_service import generate_sql_query
-# from appp.utils.preprocessing import preprocess_query
+# Standard library imports
+import os
+from datetime import datetime
 
-# # Set page config
-# st.set_page_config(page_title="SQL Query Assistant", layout="wide", initial_sidebar_state="expanded")
-
-# # Custom CSS to improve UI
-# st.markdown("""
-# <style>
-#     .reportview-container {
-#         background: #f0f2f6
-#     }
-#     .sidebar .sidebar-content {
-#         background: #262730
-#     }
-#     .Widget>label {
-#         color: #262730;
-#         font-family: monospace;
-#     }
-#     .stTextInput>div>div>input {
-#         color: #262730;
-#     }
-# </style>
-# """, unsafe_allow_html=True)
-
-# # Sidebar
-# st.sidebar.title("SQL Query Assistant")
-# st.sidebar.image("https://img.icons8.com/color/96/000000/sql.png", width=100)
-
-# # Main content
-# st.title("Natural Language to SQL Query Converter")
-
-# # User input
-# user_query = st.text_area("Enter your query in natural language:", height=100)
-
-# if st.button("Generate SQL"):
-#     with st.spinner("Generating SQL query..."):
-#         try:
-#             # Generate SQL query
-#             generated_sql = generate_sql_query(user_query)
-            
-#             # Display generated SQL
-#             st.subheader("Generated SQL Query:")
-#             st.code(generated_sql, language="sql")
-            
-#             # Process and execute query
-#             processed_query = preprocess_query(generated_sql)
-#             db = get_database_connection()
-#             query_service = QueryService(db)
-#             result = query_service.get_data(processed_query)
-            
-#             # Display results
-#             st.subheader("Query Results:")
-#             if result:
-#                 df = pd.DataFrame(result)
-#                 st.dataframe(df)
-                
-#                 # Data visualization
-#                 st.subheader("Data Visualization")
-#                 if len(df.columns) >= 2:
-#                     col1, col2 = st.columns(2)
-#                     with col1:
-#                         chart_type = st.selectbox("Select chart type:", ["Bar", "Line", "Scatter"])
-#                     with col2:
-#                         x_axis = st.selectbox("Select X-axis:", df.columns)
-#                         y_axis = st.selectbox("Select Y-axis:", [col for col in df.columns if col != x_axis])
-                    
-#                     if chart_type == "Bar":
-#                         fig = px.bar(df, x=x_axis, y=y_axis)
-#                     elif chart_type == "Line":
-#                         fig = px.line(df, x=x_axis, y=y_axis)
-#                     else:
-#                         fig = px.scatter(df, x=x_axis, y=y_axis)
-                    
-#                     st.plotly_chart(fig, use_container_width=True)
-#                 else:
-#                     st.info("Not enough columns for visualization. Query result should have at least two columns.")
-#             else:
-#                 st.info("No results found for the given query.")
-            
-#         except Exception as e:
-#             st.error(f"An error occurred: {str(e)}")
-
-# # Additional features
-# st.sidebar.subheader("Additional Features")
-
-# # Query history
-# if 'query_history' not in st.session_state:
-#     st.session_state.query_history = []
-
-# if st.sidebar.button("Show Query History"):
-#     st.sidebar.subheader("Query History")
-#     for idx, query in enumerate(st.session_state.query_history):
-#         st.sidebar.text(f"{idx + 1}. {query[:50]}...")
-
-# # Save query
-# if st.sidebar.button("Save Current Query"):
-#     if user_query:
-#         st.session_state.query_history.append(user_query)
-#         st.sidebar.success("Query saved!")
-#     else:
-#         st.sidebar.warning("No query to save.")
-
-# # Clear history
-# if st.sidebar.button("Clear History"):
-#     st.session_state.query_history = []
-#     st.sidebar.success("History cleared!")
-
-# # Help section
-# with st.sidebar.expander("Help"):
-#     st.markdown("""
-#     **How to use:**
-#     1. Enter your query in natural language in the text area.
-#     2. Click 'Generate SQL' to convert it to SQL and see results.
-#     3. Explore the generated SQL, query results, and data visualizations.
-#     4. Use additional features in the sidebar to manage your queries.
-#     """)
-
-# # Footer
-# st.markdown("---")
-# st.markdown("Created with ❤️ using Streamlit")
-
-
-
-#### Working Fine, but schema directly displaying in side bar
-
-
-# import streamlit as st
-# import pandas as pd
-# import plotly.express as px
-# from appp.database import get_database_connection
-# from appp.services.query_service import QueryService
-# from appp.services.llm_service import generate_sql_query
-# from appp.utils.preprocessing import preprocess_query
-# from appp.database import get_database_schema
-# # from pandas import DataFrame as df
-
-# if 'db_schema' not in st.session_state:
-#     st.session_state.db_schema = get_database_schema()
-    
-
-# # Set page config
-# st.set_page_config(page_title="SQL Query Assistant", layout="wide", initial_sidebar_state="expanded")
-
-# with st.sidebar.expander("Database Schema"):
-#     for table, columns in st.session_state.db_schema.items():
-#         st.sidebar.subheader(f"Table: {table}")
-#         for column in columns:
-#             st.sidebar.text(f"  - {column['Column Name']} ({column['Data Type']})")
-
-# # Custom CSS to improve UI
-# st.markdown("""
-# <style>
-#     .reportview-container {
-#         background: #f0f2f6
-#     }
-#     .sidebar .sidebar-content {
-#         background: #262730
-#     }
-#     .Widget>label {
-#         color: #262730;
-#         font-family: monospace;
-#     }
-#     .stTextInput>div>div>input {
-#         color: #262730;
-#     }
-# </style>
-# """, unsafe_allow_html=True)
-
-# # Initialize session state
-# if 'generated_sql' not in st.session_state:
-#     st.session_state.generated_sql = None
-# if 'query_result' not in st.session_state:
-#     st.session_state.query_result = None
-# if 'query_history' not in st.session_state:
-#     st.session_state.query_history = []
-
-# # Sidebar
-# st.sidebar.title("SQL Query Assistant")
-# st.sidebar.image("https://img.icons8.com/color/96/000000/sql.png", width=100)
-
-# st.sidebar.subheader("Database Schema")
-# if st.session_state.db_schema:
-#     selected_table = st.sidebar.selectbox("Select a table", options=list(st.session_state.db_schema.keys()))
-    
-#     if selected_table:
-#         columns = st.session_state.db_schema[selected_table]
-#         df = pd.DataFrame(columns, columns=['Column Name', 'Data Type'])
-#         st.sidebar.table(df)
-# else:
-#     st.sidebar.warning("Unable to fetch database schema.")
-
-# # Main content
-# st.title("Natural Language to SQL Query Converter")
-
-# # User input
-# user_query = st.text_area("Enter your query in natural language:", height=100)
-
-# def generate_and_execute_query():
-#     try:
-#         # Generate SQL query
-#         st.session_state.generated_sql = generate_sql_query(user_query)
-        
-#         # Process and execute query
-#         processed_query = preprocess_query(st.session_state.generated_sql)
-#         db = get_database_connection()
-#         query_service = QueryService(db)
-#         st.session_state.query_result = query_service.get_data(processed_query)
-        
-#         # Add to query history
-#         if user_query not in st.session_state.query_history:
-#             st.session_state.query_history.append(user_query)
-    
-#     except Exception as e:
-#         st.error(f"An error occurred: {str(e)}")
-
-# if st.button("Generate SQL"):
-#     with st.spinner("Generating SQL query..."):
-#         generate_and_execute_query()
-
-# # Display generated SQL and results
-# if st.session_state.generated_sql:
-#     st.subheader("Generated SQL Query:")
-#     processed_query = preprocess_query(st.session_state.generated_sql)
-#     st.code(processed_query, language="sql")
-
-# if st.session_state.query_result:
-#     st.subheader("Query Results:")
-#     df = pd.DataFrame(st.session_state.query_result)
-#     st.dataframe(df)
-    
-#     # Data visualization
-#     st.subheader("Data Visualization")
-#     if len(df.columns) >= 2:
-#         col1, col2 = st.columns(2)
-#         with col1:
-#             chart_type = st.selectbox("Select chart type:", ["Bar", "Line", "Scatter"], key="chart_type")
-#         with col2:
-#             x_axis = st.selectbox("Select X-axis:", df.columns, key="x_axis")
-#             y_axis = st.selectbox("Select Y-axis:", [col for col in df.columns if col != x_axis], key="y_axis")
-        
-#         if chart_type == "Bar":
-#             fig = px.bar(df, x=x_axis, y=y_axis)
-#         elif chart_type == "Line":
-#             fig = px.line(df, x=x_axis, y=y_axis)
-#         else:
-#             fig = px.scatter(df, x=x_axis, y=y_axis)
-        
-#         st.plotly_chart(fig, use_container_width=True)
-#     else:
-#         st.info("Not enough columns for visualization. Query result should have at least two columns.")
-
-# # Additional features
-# st.sidebar.subheader("Additional Features")
-
-# # Query history
-# if st.sidebar.button("Show Query History"):
-#     st.sidebar.subheader("Query History")
-#     for idx, query in enumerate(st.session_state.query_history):
-#         st.sidebar.text(f"{idx + 1}. {query[:50]}...")
-
-# # Clear history
-# if st.sidebar.button("Clear History"):
-#     st.session_state.query_history = []
-#     st.sidebar.success("History cleared!")
-
-# # Help section
-# with st.sidebar.expander("Help"):
-#     st.markdown("""
-#     **How to use:**
-#     1. Enter your query in natural language in the text area.
-#     2. Click 'Generate SQL' to convert it to SQL and see results.
-#     3. Explore the generated SQL, query results, and data visualizations.
-#     4. Use additional features in the sidebar to manage your queries.
-#     """)
-
-# # Footer
-# st.markdown("---")
-# st.markdown("Created with ❤️ using Streamlit")
-
-
-
-
+# Third-party imports
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from appp.database import get_database_connection, get_database_schema
-from appp.services.query_service import QueryService
-from appp.services.llm_service import generate_sql_query
-from appp.utils.preprocessing import preprocess_query
+from dotenv import load_dotenv
+from streamlit_option_menu import option_menu
+import requests
+import io
+
+# Custom imports
+from src.database import (
+    get_database_connection,
+    get_database_schema,
+    get_databases,
+)
+from src.services.query_service import QueryService
+from src.services.llm_service import generate_sql_query
+from src.utils.preprocessing import preprocess_query
+from src.config.log_handler import logger
+
+load_dotenv()
 
 # Set page config
-st.set_page_config(page_title="SQL Query Assistant", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="AI SQL Assistant",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
-# Custom CSS to improve UI
-st.markdown("""
+# Custom CSS for improved UI
+st.markdown(
+    """
 <style>
     .reportview-container {
-        background: #f0f2f6
+        background: linear-gradient(to right, #2c3e50, #4ca1af);
+        color: white;
     }
     .sidebar .sidebar-content {
-        background: #262730
+        background: rgba(38, 39, 48, 0.8);
     }
     .Widget>label {
-        color: #262730;
-        font-family: monospace;
+        color: #ffffff;
+        font-family: 'Roboto', sans-serif;
     }
     .stTextInput>div>div>input {
-        color: #262730;
+        color: white !important;
+        background-color: rgba(38, 39, 48, 0.8) !important;
+        border: 1px solid #4ca1af;
     }
     .dataframe {
         font-size: 12px;
+        background-color: rgba(255, 255, 255, 0.1);
     }
     .dataframe th {
-        text-align: left;
-        background-color: #f0f2f6;
+        background-color: rgba(76, 161, 175, 0.3);
     }
-    .dataframe td {
-        text-align: left;
+    .stTextInput>div>div>input::placeholder {
+        color: #a0a0a0;
+    }
+    .stTextInput>label {
+        color: white !important;
+    }
+    .stButton>button {
+        color: #ffffff;
+        background-color: #4ca1af;
+        border: none;
+    }
+    .stButton>button:hover {
+        background-color: #2c3e50;
+    }
+    .stSelectbox>div>div>select {
+        color: white;
+        background-color: rgba(38, 39, 48, 0.8);
     }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # Initialize session state
-if 'generated_sql' not in st.session_state:
+if "connected" not in st.session_state:
+    st.session_state.connected = False
+if "current_db" not in st.session_state:
+    st.session_state.current_db = None
+if "generated_sql" not in st.session_state:
     st.session_state.generated_sql = None
-if 'query_result' not in st.session_state:
+if "query_result" not in st.session_state:
     st.session_state.query_result = None
-if 'query_history' not in st.session_state:
-    st.session_state.query_history = []
-if 'db_schema' not in st.session_state:
-    st.session_state.db_schema = get_database_schema()
+if "query_history" not in st.session_state:
+    st.session_state.query_history = {}
+if "db_schema" not in st.session_state:
+    st.session_state.db_schema = None
+if "theme" not in st.session_state:
+    st.session_state.theme = "light"
 
-# Sidebar
-st.sidebar.title("SQL Query Assistant")
-# st.sidebar.image("https://img.icons8.com/color/96/000000/sql.png", width=100)
 
-# Schema display
-st.sidebar.subheader("Database Schema")
-if st.session_state.db_schema:
-    selected_table = st.sidebar.selectbox("Select a table", options=list(st.session_state.db_schema.keys()))
-    
-    if selected_table:
-        columns = st.session_state.db_schema[selected_table]
-        df = pd.DataFrame(columns)
-        st.sidebar.table(df.style.set_properties(**{'text-align': 'left'}))
+# Function to load Lottie animations
+def load_lottie_url(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
+
+# Login Page
+if not st.session_state.connected:
+    st.title("AI SQL Assistant")
+
+    default_host = os.getenv("DB_HOST", "localhost")
+    default_user = os.getenv("DB_USERNAME", "root")
+    default_password = os.getenv("DB_PASSWORD", "password")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        host = st.text_input("Host")
+        user = st.text_input("User")
+        password = st.text_input("Password", type="password")
+
+    with col2:
+        st.markdown("### Quick Connect")
+        if st.button("Use Default Connection", key="default_conn"):
+            try:
+                conn = get_database_connection(
+                    default_host, default_user, default_password
+                )
+                st.session_state.connection_params = {
+                    "host": default_host,
+                    "user": default_user,
+                    "password": default_password,
+                }
+                st.session_state.connected = True
+                st.success("Localhost Database connected successfully!")
+                logger.log_info("Localhost Database connected successfully!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Connection failed: {str(e)}")
+
+    if st.button("Connect", key="custom_conn"):
+        try:
+            conn = get_database_connection(host, user, password)
+            st.session_state.connection_params = {
+                "host": host,
+                "user": user,
+                "password": password,
+            }
+            st.session_state.connected = True
+            st.success("Connected successfully!")
+            logger.log_info("Connected successfully!")
+            st.rerun()
+        except Exception as e:
+            st.error(f"Connection failed: {str(e)}")
+
+# Main Application
 else:
-    st.sidebar.warning("Unable to fetch database schema.")
+    # Sidebar
+    with st.sidebar:
+        st.title("SQL Query Assistant")
+        menu = option_menu(
+            "Main Menu",
+            ["Home", "Query", "Visualize", "Logout"],
+            icons=["house", "code-square", "bar-chart", "gear"],
+            menu_icon="cast",
+            default_index=0,
+        )
 
-# Main content
-st.title("Natural Language to SQL Query Converter")
+    if menu == "Home":
+        st.title("Welcome to Advanced SQL Assistant")
+        st.write("Select an option from the sidebar to get started.")
 
-# User input
-user_query = st.text_area("Enter your query in natural language:", height=100)
-
-def generate_and_execute_query():
-    try:
-        # Generate SQL query
-        raw_sql = generate_sql_query(user_query)
-        
-        # Preprocess the generated SQL
-        st.session_state.generated_sql = preprocess_query(raw_sql)
-        
-        # Process and execute query
-        db = get_database_connection()
-        query_service = QueryService(db)
-        st.session_state.query_result = query_service.get_data(st.session_state.generated_sql)
-        
-        # Add to query history
-        if user_query not in st.session_state.query_history:
-            st.session_state.query_history.append(user_query)
-    
-    except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
-
-if st.button("Generate SQL"):
-    with st.spinner("Generating SQL query..."):
-        generate_and_execute_query()
-
-# Display generated SQL and results
-if st.session_state.generated_sql:
-    st.subheader("Generated SQL Query:")
-    st.code(st.session_state.generated_sql, language="sql")
-
-if st.session_state.query_result:
-    st.subheader("Query Results:")
-    df = pd.DataFrame(st.session_state.query_result)
-    st.dataframe(df)
-    
-    # Data visualization
-    st.subheader("Data Visualization")
-    if len(df.columns) >= 2:
-        col1, col2 = st.columns(2)
-        with col1:
-            chart_type = st.selectbox("Select chart type:", ["Bar", "Line", "Scatter"], key="chart_type")
-        with col2:
-            x_axis = st.selectbox("Select X-axis:", df.columns, key="x_axis")
-            y_axis = st.selectbox("Select Y-axis:", [col for col in df.columns if col != x_axis], key="y_axis")
-        
-        if chart_type == "Bar":
-            fig = px.bar(df, x=x_axis, y=y_axis)
-        elif chart_type == "Line":
-            fig = px.line(df, x=x_axis, y=y_axis)
+        # Display some statistics or recent activity
+        st.subheader("Recent Activity")
+        if st.session_state.current_db and st.session_state.query_history.get(
+            st.session_state.current_db
+        ):
+            recent_queries = st.session_state.query_history[
+                st.session_state.current_db
+            ][-5:]
+            for query in recent_queries:
+                st.info(query)
         else:
-            fig = px.scatter(df, x=x_axis, y=y_axis)
-        
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.info("Not enough columns for visualization. Query result should have at least two columns.")
+            st.info("No recent queries.")
 
-# Additional features
-st.sidebar.subheader("Additional Features")
+    elif menu == "Query":
+        if st.session_state.current_db is None:
+            databases = get_databases(**st.session_state.connection_params)
+            selected_db = st.selectbox("Select a database", options=databases)
+            if st.button("Use Selected Database"):
+                st.session_state.current_db = selected_db
+                st.session_state.db_schema = get_database_schema(
+                    selected_db, **st.session_state.connection_params
+                )
+                st.session_state.query_history[selected_db] = []
+                st.rerun()
 
-# Query history
-if st.sidebar.button("Show Query History"):
-    st.sidebar.subheader("Query History")
-    for idx, query in enumerate(st.session_state.query_history):
-        st.sidebar.text(f"{idx + 1}. {query[:50]}...")
+        if st.session_state.current_db:
+            st.title(
+                "Natural Language to SQL Query Converter - "
+                f"{st.session_state.current_db}"
+            )
 
-# Clear history
-if st.sidebar.button("Clear History"):
-    st.session_state.query_history = []
-    st.sidebar.success("History cleared!")
+            # Schema display
+            with st.expander("Database Schema"):
+                if st.session_state.db_schema:
+                    selected_table = st.selectbox(
+                        "Select a table",
+                        options=list(st.session_state.db_schema.keys()),
+                    )
 
-# Help section
-with st.sidebar.expander("Help"):
-    st.markdown("""
-    **How to use:**
-    1. Enter your query in natural language in the text area.
-    2. Click 'Generate SQL' to convert it to SQL and see results.
-    3. Explore the generated SQL, query results, and data visualizations.
-    4. Use additional features in the sidebar to manage your queries.
-    5. Select a table from the dropdown to view its schema.
-    """)
+                    if selected_table:
+                        columns = st.session_state.db_schema[selected_table]
+                        df = pd.DataFrame(columns)
+                        st.table(
+                            df.style.set_properties(**{"text-align": "left"})
+                        )
+                else:
+                    st.warning("Unable to fetch database schema.")
 
-# Footer
-st.markdown("---")
-st.markdown("Created by Sai Varshith")
+            # User input
+            user_query = st.text_area(
+                "Enter your query in natural language:", height=100
+            )
+
+            def generate_and_execute_query():
+                try:
+                    with st.spinner("Generating and executing query..."):
+                        raw_sql = generate_sql_query(
+                            user_query,
+                            st.session_state.current_db,
+                            st.session_state.connection_params,
+                        )
+                        st.session_state.generated_sql = preprocess_query(
+                            raw_sql
+                        )
+
+                        db = get_database_connection(
+                            **st.session_state.connection_params,
+                            database=st.session_state.current_db,
+                        )
+                        query_service = QueryService(db)
+                        st.session_state.query_result = query_service.get_data(
+                            st.session_state.generated_sql
+                        )
+
+                        if (
+                            user_query
+                            not in st.session_state.query_history[
+                                st.session_state.current_db
+                            ]
+                        ):
+                            st.session_state.query_history[
+                                st.session_state.current_db
+                            ].append(user_query)
+
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")
+
+            if st.button("Generate and Execute SQL"):
+                generate_and_execute_query()
+
+            # Display generated SQL and results
+            if st.session_state.generated_sql:
+                st.subheader("Generated SQL Query:")
+                st.code(st.session_state.generated_sql, language="sql")
+
+            if st.session_state.query_result:
+                st.subheader("Query Results:")
+                df = pd.DataFrame(st.session_state.query_result)
+                st.dataframe(df)
+
+                # Export options
+                export_format = st.selectbox(
+                    "Export format", ["CSV", "JSON", "Excel"]
+                )
+                if st.button("Export Data"):
+                    if export_format == "CSV":
+                        st.download_button(
+                            "Download CSV",
+                            df.to_csv(index=False),
+                            "query_result.csv",
+                            "text/csv",
+                        )
+                    elif export_format == "JSON":
+                        st.download_button(
+                            "Download JSON",
+                            df.to_json(orient="records"),
+                            "query_result.json",
+                            "application/json",
+                        )
+                    else:
+                        output = io.BytesIO()
+                        with pd.ExcelWriter(
+                            output, engine="xlsxwriter"
+                        ) as writer:
+                            df.to_excel(
+                                writer, sheet_name="Sheet1", index=False
+                            )
+                        st.download_button(
+                            "Download Excel",
+                            output.getvalue(),
+                            "query_result.xlsx",
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        )
+
+    elif menu == "Visualize":
+        st.title("Data Visualization")
+
+        if st.session_state.query_result:
+            df = pd.DataFrame(st.session_state.query_result)
+
+            chart_type = st.selectbox(
+                "Select chart type:",
+                ["Bar", "Line", "Scatter", "Pie", "Heatmap"],
+            )
+
+            if len(df.columns) >= 2:
+                x_axis = st.selectbox(
+                    "Select X-axis:", df.columns, key="x_axis"
+                )
+                y_axis = st.selectbox(
+                    "Select Y-axis:",
+                    [col for col in df.columns if col != x_axis],
+                    key="y_axis",
+                )
+
+                if chart_type == "Bar":
+                    fig = px.bar(df, x=x_axis, y=y_axis)
+                elif chart_type == "Line":
+                    fig = px.line(df, x=x_axis, y=y_axis)
+                elif chart_type == "Scatter":
+                    fig = px.scatter(df, x=x_axis, y=y_axis)
+                elif chart_type == "Pie":
+                    fig = px.pie(df, names=x_axis, values=y_axis)
+                elif chart_type == "Heatmap":
+                    fig = px.imshow(df.corr())
+
+                st.plotly_chart(fig, use_container_width=True)
+
+                # Advanced options
+                with st.expander("Advanced Options"):
+                    color_scale = st.selectbox(
+                        "Color Scale",
+                        ["Viridis", "Plasma", "Inferno", "Magma", "Cividis"],
+                    )
+                    fig.update_layout(coloraxis_colorscale=color_scale)
+
+                    title = st.text_input("Chart Title", "My Chart")
+                    fig.update_layout(title_text=title, title_x=0.5)
+
+                    show_legend = st.checkbox("Show Legend", value=True)
+                    fig.update_layout(showlegend=show_legend)
+
+                # Allow saving the chart
+                if st.button("Save Chart"):
+                    fig.write_image("chart.png")
+                    st.success("Chart saved as chart.png")
+            else:
+                st.info(
+                    "Not enough columns for visualization. "
+                    "Query result should have at least two columns."
+                )
+        else:
+            st.info("No data to visualize. Please run a query first.")
+
+    elif menu == "Logout":
+        # if st.button("Logout"):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
+
+    # Footer
+    st.markdown("---")
+    st.markdown(
+        "Created by Sai Varshith | Last updated: "
+        + datetime.now().strftime("%Y-%m-%d")
+    )
