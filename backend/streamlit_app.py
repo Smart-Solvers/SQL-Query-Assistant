@@ -122,7 +122,7 @@ if not st.session_state.connected:
 
     with col2:
         st.markdown("### Quick Connect")
-        if st.button("Use Default Connection", key="default_conn"):
+        if st.button("Use Local Host", key="default_conn"):
             try:
                 conn = get_database_connection(
                     default_host, default_user, default_password
@@ -313,7 +313,7 @@ else:
 
             chart_type = st.selectbox(
                 "Select chart type:",
-                ["Bar", "Line", "Scatter", "Pie", "Heatmap"],
+                ["Bar", "Line", "Scatter", "Pie"],
             )
 
             if len(df.columns) >= 2:
@@ -334,8 +334,8 @@ else:
                     fig = px.scatter(df, x=x_axis, y=y_axis)
                 elif chart_type == "Pie":
                     fig = px.pie(df, names=x_axis, values=y_axis)
-                elif chart_type == "Heatmap":
-                    fig = px.imshow(df.corr())
+                # elif chart_type == "Heatmap":
+                #     fig = px.imshow(df.corr())
 
                 st.plotly_chart(fig, use_container_width=True)
 
@@ -374,6 +374,6 @@ else:
     # Footer
     st.markdown("---")
     st.markdown(
-        "Created by Sai Varshith | Last updated: "
+        "Created by Code Warriors ⚔️ | Last updated: "
         + datetime.now().strftime("%Y-%m-%d")
     )
