@@ -12,8 +12,52 @@ import {
   Snackbar,
   Alert
 } from '@mui/material';
-import { styled } from '@mui/system';
-import { Visibility, VisibilityOff, LockOutlined } from '@mui/icons-material';
+import { styled, keyframes } from '@mui/system';
+import { Visibility, VisibilityOff, Home } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+
+// Define keyframes for animations
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+`;
+
+const slideUp = keyframes`
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+`;
+
+const pulse = keyframes`
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+`;
+
+const Background = styled(Box)(({ theme }) => ({
+  height: '100vh',
+  background: `url('/loginn.jpg') no-repeat center center`,
+  backgroundSize: 'cover',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  animation: `${fadeIn} 1s ease-out`,
+}));
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   marginTop: theme.spacing(8),
@@ -21,27 +65,61 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   flexDirection: 'column',
   alignItems: 'center',
   padding: theme.spacing(4),
-  backgroundColor: '#f5f5f5',
+  backgroundColor: 'rgba(255, 255, 255, 0.8)', // Semi-transparent background
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Slightly stronger shadow for better visibility
+  borderRadius: theme.shape.borderRadius,
+  animation: `${fadeIn} 1s ease-out`,
 }));
 
 const StyledForm = styled('form')(({ theme }) => ({
   width: '100%',
   marginTop: theme.spacing(1),
+  animation: `${slideUp} 1s ease-out`,
 }));
 
 const SubmitButton = styled(Button)(({ theme }) => ({
   margin: theme.spacing(3, 0, 2),
-  backgroundColor: '#4a90e2',
+  backgroundColor: '#0072ff',
+  color: '#ffffff',
+  borderRadius: 50,
+  transition: 'background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
   '&:hover': {
-    backgroundColor: '#357ae8',
+    backgroundColor: '#005bb5',
+    transform: 'scale(1.05)',
+    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)',
   },
+  '&:active': {
+    backgroundColor: '#003d7a',
+    transform: 'scale(0.95)',
+    boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
+  },
+  animation: `${pulse} 1.5s infinite`,
 }));
 
 const DefaultButton = styled(Button)(({ theme }) => ({
   marginTop: theme.spacing(1),
   backgroundColor: '#6c757d',
+  color: '#ffffff',
+  borderRadius: 50,
+  transition: 'background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
   '&:hover': {
     backgroundColor: '#5a6268',
+    transform: 'scale(1.05)',
+    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)',
+  },
+  '&:active': {
+    backgroundColor: '#4a4e54',
+    transform: 'scale(0.95)',
+    boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
+  },
+}));
+
+const HomeButton = styled(IconButton)(({ theme }) => ({
+  // Removed the rotating animation
+  '&:hover': {
+    color: '#005bb5',
   },
 }));
 
@@ -53,6 +131,8 @@ const LoginPage = ({ setIsLoggedIn, setConnectionInfo }) => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('error');
+
+  const navigate = useNavigate(); // Initialize useNavigate hook for navigation
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -85,88 +165,101 @@ const LoginPage = ({ setIsLoggedIn, setConnectionInfo }) => {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <StyledPaper elevation={6}>
-        <LockOutlined sx={{ fontSize: 40, color: '#4a90e2', mb: 2 }} />
-        <Typography component="h1" variant="h5">
-          Database Query Tool
-        </Typography>
-        <StyledForm onSubmit={handleLogin}>
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            id="host"
-            label="Host"
-            name="host"
-            autoComplete="host"
-            autoFocus
-            value={host}
-            onChange={(e) => setHost(e.target.value)}
-          />
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            id="username"
-            label="Username"
-            name="username"
-            autoComplete="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type={showPassword ? 'text' : 'password'}
-            id="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-          <SubmitButton
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
+    <Background>
+      <Container component="main" maxWidth="xs">
+        <StyledPaper elevation={6}>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            width="100%"
+            mb={2}
           >
-            Login
-          </SubmitButton>
-          <DefaultButton
-            fullWidth
-            variant="contained"
-            color="secondary"
-            onClick={handleDefaultLogin}
-          >
-            Use Default Connection
-          </DefaultButton>
-        </StyledForm>
-      </StyledPaper>
-      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Container>
+            <HomeButton onClick={() => navigate('/')} aria-label="home">
+              <Home sx={{ fontSize: 40, color: '#0072ff' }} />
+            </HomeButton>
+          </Box>
+          <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
+            Database Query Tool
+          </Typography>
+          <StyledForm onSubmit={handleLogin}>
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              id="host"
+              label="Host"
+              name="host"
+              autoComplete="host"
+              autoFocus
+              value={host}
+              onChange={(e) => setHost(e.target.value)}
+              sx={{ mb: 2, animation: `${slideUp} 1s ease-out` }}
+            />
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              sx={{ mb: 2, animation: `${slideUp} 1s ease-out 0.2s` }}
+            />
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              id="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ mb: 3, animation: `${slideUp} 1s ease-out 0.4s` }}
+            />
+            <SubmitButton
+              type="submit"
+              fullWidth
+              variant="contained"
+            >
+              Login
+            </SubmitButton>
+            <DefaultButton
+              fullWidth
+              variant="contained"
+              onClick={handleDefaultLogin}
+            >
+              Use Default Connection
+            </DefaultButton>
+          </StyledForm>
+        </StyledPaper>
+        <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%', animation: `${fadeIn} 1s ease-out` }}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+      </Container>
+    </Background>
   );
 };
 

@@ -115,6 +115,7 @@ const ChatPage = ({ connectionInfo, setIsLoggedIn }) => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      const startTime = Date.now();
       const response = await axios.post('http://localhost:8000/query', {
         database: selectedDatabase,
         query: query,
@@ -127,6 +128,13 @@ const ChatPage = ({ connectionInfo, setIsLoggedIn }) => {
           'X-Host': connectionInfo.host
         }
       });
+      
+      // Ensure the loading state lasts for at least 1 second
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < 1000) {
+        await new Promise(resolve => setTimeout(resolve, 1000 - elapsedTime));
+      }
+      
       setSqlQuery(response.data.sql_query);
       setResult(response.data.response);
       
@@ -213,6 +221,20 @@ const ChatPage = ({ connectionInfo, setIsLoggedIn }) => {
     const savedQueries = JSON.parse(localStorage.getItem('savedQueries') || '[]');
     showSnackbar('Query history loaded', 'info');
   };
+  const LoadingOverlay = styled(Box)(({ theme }) => ({
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+    color: theme.palette.common.white,
+  }));
 
   const renderResultTable = (data) => {
     if (!Array.isArray(data) || data.length === 0) {
@@ -348,15 +370,15 @@ const ChatPage = ({ connectionInfo, setIsLoggedIn }) => {
                 />
                 <Grid container spacing={2} justifyContent="space-between">
                   <Grid item>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      endIcon={loading ? <CircularProgress size={24} /> : <Send />}
-                      onClick={handleSubmit}
-                      disabled={loading}
-                    >
-                      Execute Query
-                    </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    endIcon={loading ? <CircularProgress size={24} color="inherit" /> : <Send />}
+                    onClick={handleSubmit}
+                    disabled={loading}
+                  >
+                    {loading ? 'Executing...' : 'Execute Query'}
+                  </Button>
                   </Grid>
                   <Grid item>
                     <Tooltip title="Save query">
@@ -421,6 +443,14 @@ const ChatPage = ({ connectionInfo, setIsLoggedIn }) => {
           </Alert>
         </Snackbar>
       </div>
+      {loading && (
+        <LoadingOverlay>
+          <CircularProgress size={60} color="inherit" />
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Executing Query...
+          </Typography>
+        </LoadingOverlay>
+      )}
     </ThemeProvider>
   );
 };

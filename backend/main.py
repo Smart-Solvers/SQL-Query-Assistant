@@ -27,6 +27,7 @@ async def login(login_request: LoginRequest):
             login_request.username,
             login_request.password
         )
+        print(connection)
         connection.close()
         return {"message": "Login successful"}
     except Exception as e:
