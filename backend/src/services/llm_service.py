@@ -4,6 +4,7 @@ import os
 # 3rd party
 import requests
 from dotenv import load_dotenv
+from fastapi import HTTPException
 
 # custom
 from src.database import get_database_schema
@@ -56,7 +57,7 @@ SQL query:"""
 
     response = requests.post(API_URL, headers=headers, json=data)
     if response.status_code != 200:
-        raise Exception(
+        raise HTTPException(
             f"Request failed: {response.status_code}, {response.text}"
         )
 

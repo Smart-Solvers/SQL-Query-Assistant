@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from src.database import get_databases, get_database_connection
-from src.schemas import QueryRequest, QueryResponse, LoginRequest, DatabaseConnectionInfo
+from src.schemas import QueryRequest, QueryResponse, LoginRequest
 from src.services.query_service import QueryService
 from src.services.llm_service import generate_sql_query
 from src.utils.preprocessing import preprocess_query
@@ -30,7 +30,7 @@ async def login(login_request: LoginRequest):
         connection.close()
         return {"message": "Login successful"}
     except Exception as e:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(status_code=401, detail=f"Invalid credentials: {e}")
 
 @app.get("/databases")
 async def list_databases(credentials: HTTPBasicCredentials = Depends(security)):
@@ -48,7 +48,7 @@ async def query_data(request: QueryRequest, credentials: HTTPBasicCredentials = 
         query_service = QueryService(db)
 
         generated_query = generate_sql_query(request.query, request.database, {
-            "host": "localhost",
+            "host": x_host,
             "user": credentials.username,
             "password": credentials.password
         })
@@ -58,6 +58,9 @@ async def query_data(request: QueryRequest, credentials: HTTPBasicCredentials = 
         response = query_service.get_data(processed_query)
 
         return QueryResponse(sql_query=processed_query, response=response)
+
+    except HTTPException as he:
+        raise he
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
