@@ -1,12 +1,28 @@
 import React, { useState } from 'react';
+import emailjs from 'emailjs-com';
 
 const ContactPage = () => {
   const [isHovered, setIsHovered] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+
+  const handleInputChange = (event) => {
+    setFormData({ ...formData, [event.target.name]: event.target.value });
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // handle form submission logic here
-    alert('Form submitted');
+
+    emailjs.send('service_13etgfc', 'template_9f47ny7', formData, 's1jb8V9I2e0m4ydap')
+      .then((response) => {
+        alert('Message sent successfully!');
+      }, (error) => {
+        console.error('Failed to send message:', error);
+        alert('Failed to send message. Please try again later.');
+      });
   };
 
   return (
@@ -26,15 +42,38 @@ const ContactPage = () => {
           <form onSubmit={handleSubmit}>
             <div style={styles.formGroup}>
               <label htmlFor="name">Hello, my name is</label>
-              <input type="text" id="name" name="name" required style={styles.input} />
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+                style={styles.input}
+              />
             </div>
             <div style={styles.formGroup}>
               <label htmlFor="email">and my email address is</label>
-              <input type="email" id="email" name="email" required style={styles.input} />
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+                style={styles.input}
+              />
             </div>
             <div style={styles.formGroup}>
               <label htmlFor="message">I would like to discuss about</label>
-              <textarea id="message" name="message" required style={styles.textarea}></textarea>
+              <textarea
+                id="message"
+                name="message"
+                value={formData.message}
+                onChange={handleInputChange}
+                required
+                style={styles.textarea}
+              ></textarea>
             </div>
             <div style={styles.formGroup}>
               <button
@@ -62,7 +101,7 @@ const styles = {
     backgroundRepeat: 'no-repeat',
     minHeight: '100vh',
     animation: 'fadeIn 1s ease-out',
-    overflow: 'hidden', // Prevent overflow
+    overflow: 'hidden',
   },
   header: {
     color: 'white',
@@ -82,7 +121,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     padding: '50px',
-    gap: '20px', // Add gap between columns
+    gap: '20px',
   },
   contactInfo: {
     flex: 1,
@@ -106,15 +145,15 @@ const styles = {
   },
   formGroup: {
     marginBottom: '15px',
-    animation: 'fadeIn 0.5s ease-out', // Individual element fade-in
+    animation: 'fadeIn 0.5s ease-out',
   },
   input: {
     width: '100%',
     padding: '10px',
     border: '1px solid #ccc',
     borderRadius: '5px',
-    transition: 'border-color 0.3s, box-shadow 0.3s', // Transition for border color and shadow
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Subtle shadow
+    transition: 'border-color 0.3s, box-shadow 0.3s',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   },
   textarea: {
     width: '100%',
@@ -122,7 +161,7 @@ const styles = {
     border: '1px solid #ccc',
     borderRadius: '5px',
     transition: 'border-color 0.3s, box-shadow 0.3s',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Subtle shadow
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   },
   submitButton: {
     width: '100%',
@@ -142,37 +181,8 @@ const styles = {
     background: 'linear-gradient(90deg, #0056b3, #0099cc)',
     transform: 'scale(1.05)',
     color: '#f0f0f0',
-    boxShadow: '0 6px 12px rgba(0, 0, 0, 0.3)', // Enhanced shadow on hover
+    boxShadow: '0 6px 12px rgba(0, 0, 0, 0.3)',
   }
 };
-
-// Add keyframes for animations
-const globalStyles = `
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideIn {
-    from {
-      transform: translateY(-20px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-`;
-
-// Append global styles to the document
-const styleSheet = document.createElement('style');
-styleSheet.type = 'text/css';
-styleSheet.innerText = globalStyles;
-document.head.appendChild(styleSheet);
 
 export default ContactPage;

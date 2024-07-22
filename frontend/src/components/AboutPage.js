@@ -3,7 +3,7 @@ import { Box, Container, Typography, Paper, Grid, Avatar } from '@mui/material';
 import { styled } from '@mui/system';
 import { keyframes } from '@emotion/react';
 
-// Define keyframes for animations
+
 const slideInFromBottom = keyframes`
   from {
     opacity: 0;
@@ -46,7 +46,6 @@ const fadeIn = keyframes`
   }
 `;
 
-// Styled components
 const HeroSection = styled(Box)(({ theme }) => ({
   height: '40vh',
   background: `url('/aboutt.jpg') no-repeat center center`,

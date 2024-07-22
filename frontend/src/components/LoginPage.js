@@ -16,7 +16,6 @@ import { styled, keyframes } from '@mui/system';
 import { Visibility, VisibilityOff, Home } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
-// Define keyframes for animations
 const fadeIn = keyframes`
   from {
     opacity: 0;
@@ -65,8 +64,8 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   flexDirection: 'column',
   alignItems: 'center',
   padding: theme.spacing(4),
-  backgroundColor: 'rgba(255, 255, 255, 0.8)', // Semi-transparent background
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Slightly stronger shadow for better visibility
+  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
   borderRadius: theme.shape.borderRadius,
   animation: `${fadeIn} 1s ease-out`,
 }));
@@ -117,7 +116,6 @@ const DefaultButton = styled(Button)(({ theme }) => ({
 }));
 
 const HomeButton = styled(IconButton)(({ theme }) => ({
-  // Removed the rotating animation
   '&:hover': {
     color: '#005bb5',
   },
@@ -132,7 +130,7 @@ const LoginPage = ({ setIsLoggedIn, setConnectionInfo }) => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('error');
 
-  const navigate = useNavigate(); // Initialize useNavigate hook for navigation
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Typography, Button, Grid, Paper, Box, IconButton } from '@mui/material';
+import { Container, Typography, Button, Grid, Paper, Box } from '@mui/material';
 import { styled, keyframes } from '@mui/system';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
@@ -36,11 +36,12 @@ const slideInFromRight = keyframes`
 `;
 
 const StyledContainer = styled(Container)(({ theme }) => ({
-  height: '100vh',
+  minHeight: 'calc(100vh - 60px)', // Adjust 60px based on your footer height
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: 'rgba(245, 245, 245, 0.8)',
+  padding: theme.spacing(2),
+  paddingBottom: theme.spacing(8), // Add extra padding at the bottom
   animation: `${fadeIn} 1s ease-out`,
 }));
 
@@ -68,9 +69,14 @@ const StyledButton = styled(Button)(({ theme }) => ({
 }));
 
 const ImageBox = styled(Box)(({ theme }) => ({
-  height: '100vh',
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
   background: `url('/sqll.jpg') no-repeat center center`,
   backgroundSize: 'cover',
+  zIndex: -1,
 }));
 
 const StepCard = styled(Paper)(({ theme, color, degree }) => ({
@@ -84,11 +90,22 @@ const StepCard = styled(Paper)(({ theme, color, degree }) => ({
   animation: `${slideInFromRight} 1s ease-out`,
 }));
 
+const Footer = styled('footer')(({ theme }) => ({
+  width: '100%',
+  padding: theme.spacing(2),
+  backgroundColor: '#ffffff',
+  textAlign: 'center',
+  position: 'fixed',
+  bottom: 0,
+  left: 0,
+}));
+
 const HomePage = () => {
   return (
-    <ImageBox>
-      <StyledContainer maxWidth="lg">
-        <Grid container spacing={2}>
+    <>
+      <ImageBox />
+      <StyledContainer>
+        <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} md={6}>
             <StyledPaper elevation={6}>
               <Typography variant="h3" component="h1" gutterBottom>
@@ -111,7 +128,7 @@ const HomePage = () => {
             </StyledPaper>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Box mt={4}>
+            <Box>
               <StepCard color="#ffffff" degree={-5}>
                 <Typography variant="h5">01</Typography>
                 <Typography variant="h6">Submit Query</Typography>
@@ -136,7 +153,7 @@ const HomePage = () => {
           </Grid>
         </Grid>
       </StyledContainer>
-    </ImageBox>
+    </>
   );
 };
 
