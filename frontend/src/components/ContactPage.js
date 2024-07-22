@@ -16,9 +16,35 @@ const ContactPage = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    emailjs.send('service_13etgfc', 'template_9f47ny7', formData, 's1jb8V9I2e0m4ydap')
+    const emailData = {
+      from_name: formData.name,
+      from_email: formData.email,
+      message: formData.message,
+      to_email: 'YOUR_EMAIL@example.com'
+    };
+
+    console.log('Email Data:', emailData);
+
+    emailjs.send('service_13etgfc', 'template_9f47ny7', emailData, 's1jb8V9I2e0m4ydap')
       .then((response) => {
+        console.log('SUCCESS!', response.status, response.text);
         alert('Message sent successfully!');
+
+        const replyData = {
+          to_name: formData.name,
+          from_name: 'Sql Query Team',
+          to_email: formData.email
+        };
+
+        console.log('Reply Data:', replyData);
+
+        emailjs.send('service_13etgfc', 'template_0vbxf9v', replyData, 's1jb8V9I2e0m4ydap')
+          .then((response) => {
+            console.log('Auto-reply sent!', response.status, response.text);
+          }, (error) => {
+            console.error('Failed to send auto-reply:', error);
+          });
+
       }, (error) => {
         console.error('Failed to send message:', error);
         alert('Failed to send message. Please try again later.');
@@ -184,5 +210,32 @@ const styles = {
     boxShadow: '0 6px 12px rgba(0, 0, 0, 0.3)',
   }
 };
+
+const globalStyles = `
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+`;
+
+const styleSheet = document.createElement('style');
+styleSheet.type = 'text/css';
+styleSheet.innerText = globalStyles;
+document.head.appendChild(styleSheet);
 
 export default ContactPage;
