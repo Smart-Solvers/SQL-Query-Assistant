@@ -6,3 +6,5 @@ python-dotenv
 pandas
 requests
 sqlalchemy
+streamlit
+streamlit_option_menu

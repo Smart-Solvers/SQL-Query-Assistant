@@ -6,29 +6,14 @@ from fastapi.security import HTTPBasicCredentials
 from src.config.log_handler import logger
 
 
-# def get_database_connection(host, user, password, database=None):
-#     return pymysql.connect(
-#         host=host,
-#         user=user,
-#         password=password,
-#         database=database,
-#         cursorclass=pymysql.cursors.DictCursor,
-#     )
-
-import os
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-DATABASE_URL = "mysql+pymysql://admin:password@mydatabase.cn0geeyykjyj.us-east-1.rds.amazonaws.com:3306/mydatabase"
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def get_database_connection(host, user, password, database=None):
+    return pymysql.connect(
+        host=host,
+        user=user,
+        password=password,
+        database=database,
+        cursorclass=pymysql.cursors.DictCursor,
+    )
 
 
 def get_databases(host, user, password):
@@ -38,8 +23,7 @@ def get_databases(host, user, password):
         "mysql",
         "sys",
     ]
-    # connection = get_database_connection(host, user, password)
-    connection = get_db()
+    connection = get_database_connection(host, user, password)
     try:
         with connection.cursor() as cursor:
             cursor.execute("SHOW DATABASES")
@@ -56,8 +40,7 @@ def get_databases(host, user, password):
 def get_database_schema(database, host, user, password):
     schema = {}
     try:
-        # connection = get_database_connection(host, user, password, database)
-        connection = get_db()
+        connection = get_database_connection(host, user, password, database)
         with connection.cursor() as cursor:
             cursor.execute("SHOW TABLES")
             tables = cursor.fetchall()
@@ -92,10 +75,9 @@ def post_database(
 ):
     try:
         response = str(response)
-        # connection = get_database_connection(
-        #     host, credentials.username, credentials.password, database
-        # )
-        connection = get_db()
+        connection = get_database_connection(
+            host, credentials.username, credentials.password, database
+        )
         with connection.cursor() as cursor:
             sql = """
             INSERT INTO sql_assistant.query_table (user_name, user_input, processed_query, response)

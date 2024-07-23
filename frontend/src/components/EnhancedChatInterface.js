@@ -8,7 +8,7 @@ import {
   IconButton, Tooltip, CircularProgress, Snackbar, Alert, Drawer, List, 
   ListItem, ListItemText, ListItemIcon, Divider, useTheme, useMediaQuery,
   AppBar, Toolbar, CssBaseline, Dialog, DialogTitle, DialogContent, DialogActions,
-  Switch, FormControlLabel, Chip, Fab
+  Switch, FormControlLabel, Chip, Fab, Zoom
 } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { 
@@ -121,6 +121,7 @@ const MessageBubble = ({ content, isUser, theme }) => (
 
 const CodeCell = ({ code, darkMode }) => {
   const [copied, setCopied] = useState(false);
+  const codeRef = useRef(null);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -129,18 +130,21 @@ const CodeCell = ({ code, darkMode }) => {
   };
 
   return (
-    <Box sx={{ position: 'relative', marginY: 2 }}>
-      <SyntaxHighlighter
-        language="sql"
-        style={darkMode ? atomDark : prism}
-        customStyle={{
-          margin: 0,
-          borderRadius: '8px',
-          padding: '16px',
-        }}
-      >
-        {code}
-      </SyntaxHighlighter>
+    <Box sx={{ position: 'relative', marginY: 2, overflowX: 'auto' }}>
+      <Box ref={codeRef} sx={{ minWidth: '100%', display: 'inline-block' }}>
+        <SyntaxHighlighter
+          language="sql"
+          style={darkMode ? atomDark : prism}
+          customStyle={{
+            margin: 0,
+            borderRadius: '8px',
+            padding: '16px',
+            whiteSpace: 'pre', // Ensure it doesn't wrap
+          }}
+        >
+          {code}
+        </SyntaxHighlighter>
+      </Box>
       <Tooltip title={copied ? "Copied!" : "Copy to clipboard"}>
         <IconButton
           onClick={handleCopy}
@@ -159,28 +163,38 @@ const ResultTable = ({ data, theme }) => {
   const columns = Object.keys(data[0]);
 
   return (
-    <TableContainer component={Paper} sx={{ marginY: 2, maxHeight: '300px', overflow: 'auto' }}>
-      <Table stickyHeader size="small">
-        <TableHead>
-          <TableRow>
-            {columns.map((column) => (
-              <TableCell key={column} sx={{ backgroundColor: theme.palette.primary.main, color: theme.palette.primary.contrastText }}>
-                {column}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {data.map((row, index) => (
-            <TableRow key={index} sx={{ '&:nth-of-type(odd)': { backgroundColor: theme.palette.action.hover } }}>
+    <Box sx={{ overflowX: 'auto', marginY: 2, maxWidth: '100%' }}>
+      <TableContainer component={Paper} sx={{ maxHeight: '300px' }}>
+        <Table stickyHeader size="small" sx={{ minWidth: '100%' }}>
+          <TableHead>
+            <TableRow>
               {columns.map((column) => (
-                <TableCell key={column}>{row[column]}</TableCell>
+                <TableCell 
+                  key={column} 
+                  sx={{ 
+                    backgroundColor: theme.palette.primary.main, 
+                    color: theme.palette.primary.contrastText,
+                    whiteSpace: 'nowrap',
+                    minWidth: '150px'  // Ensure a minimum width for each column
+                  }}
+                >
+                  {column}
+                </TableCell>
               ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {data.map((row, index) => (
+              <TableRow key={index} sx={{ '&:nth-of-type(odd)': { backgroundColor: theme.palette.action.hover } }}>
+                {columns.map((column) => (
+                  <TableCell key={column} sx={{ whiteSpace: 'nowrap', minWidth: '150px' }}>{row[column]}</TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 };
 
@@ -245,15 +259,6 @@ export default function ProfessionalAIDatabaseAssistant({ connectionInfo, setIsL
 
   const [selectWidth, setSelectWidth] = useState(200);
 
-  useEffect(() => {
-    // Calculate the width based on the selected database name
-    if (selectedDatabase) {
-      const width = selectedDatabase.length * 10 + 80; // Adjust multiplier and base width as needed
-      setSelectWidth(Math.max(200, Math.min(400, width))); // Min 200px, max 400px
-    } else {
-      setSelectWidth(200); // Default width
-    }
-  }, [selectedDatabase]);
 
   useEffect(() => {
     fetchDatabases();
@@ -438,8 +443,45 @@ export default function ProfessionalAIDatabaseAssistant({ connectionInfo, setIsL
   };
 
   const drawer = (
-    <Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Toolbar />
+      <Divider />
+      <Box sx={{ p: 2 }}>
+        <Select
+          value={selectedDatabase}
+          onChange={(e) => {
+            setSelectedDatabase(e.target.value);
+            const currentChat = chats.find(c => c.id === currentChatId);
+            if (currentChat) {
+              const updatedChats = chats.map(chat => 
+                chat.id === currentChatId ? { ...chat, name: e.target.value, database: e.target.value } : chat
+              );
+              saveChats(updatedChats);
+            }
+          }}
+          displayEmpty
+          fullWidth
+          sx={{ 
+            backgroundColor: theme.palette.background.paper,
+            borderRadius: '8px',
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: theme.palette.primary.main,
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: theme.palette.primary.dark,
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: theme.palette.primary.dark,
+            },
+            transition: 'all 0.3s',
+          }}
+        >
+          <MenuItem value="" disabled>Select a database</MenuItem>
+          {databases.map((db) => (
+            <MenuItem key={db} value={db}>{db}</MenuItem>
+          ))}
+        </Select>
+      </Box>
       <Divider />
       <List>
         <ListItem button onClick={startNewChat}>
@@ -448,7 +490,7 @@ export default function ProfessionalAIDatabaseAssistant({ connectionInfo, setIsL
         </ListItem>
       </List>
       <Divider />
-      <List>
+      <List sx={{ flexGrow: 1, overflowY: 'auto' }}>
         {chats.map((chat) => (
           <ListItem 
             button 
@@ -456,22 +498,35 @@ export default function ProfessionalAIDatabaseAssistant({ connectionInfo, setIsL
             onClick={() => openChat(chat.id)}
             selected={chat.id === currentChatId}
             sx={{
+              borderRadius: '8px',
+              mx: 1,
+              my: 0.5,
               '&:hover': {
                 backgroundColor: theme.palette.action.hover,
-                transform: 'translateX(8px)',
               },
-              transition: 'all 0.2s ease-in-out',
+              '&.Mui-selected': {
+                backgroundColor: theme.palette.primary.main,
+                color: theme.palette.primary.contrastText,
+                '&:hover': {
+                  backgroundColor: theme.palette.primary.dark,
+                },
+              },
             }}
           >
-            <ListItemIcon><ChatIcon /></ListItemIcon>
+            <ListItemIcon>
+              <ChatIcon sx={{ color: chat.id === currentChatId ? theme.palette.primary.contrastText : 'inherit' }} />
+            </ListItemIcon>
             <ListItemText primary={chat.name} />
-            <IconButton edge="end" onClick={(e) => { e.stopPropagation(); deleteChat(chat.id); }}>
+            <IconButton 
+              edge="end" 
+              onClick={(e) => { e.stopPropagation(); deleteChat(chat.id); }}
+              sx={{ color: chat.id === currentChatId ? theme.palette.primary.contrastText : 'inherit' }}
+            >
               <DeleteIcon />
             </IconButton>
           </ListItem>
         ))}
       </List>
-      <Divider />
     </Box>
   );
 
@@ -532,20 +587,22 @@ export default function ProfessionalAIDatabaseAssistant({ connectionInfo, setIsL
           </Toolbar>
         </AppBar>
         <Drawer
-          variant="persistent"
-          anchor="left"
-          open={drawerOpen}
-          sx={{
+        variant="persistent"
+        anchor="left"
+        open={drawerOpen}
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
             width: drawerWidth,
-            flexShrink: 0,
-            '& .MuiDrawer-paper': {
-              width: drawerWidth,
-              boxSizing: 'border-box',
-            },
-          }}
-        >
-          {drawer}
-        </Drawer>
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
+          },
+        }}
+      >
+        {drawer}
+      </Drawer>
         <Box
           component="main"
           sx={{
@@ -573,49 +630,10 @@ export default function ProfessionalAIDatabaseAssistant({ connectionInfo, setIsL
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
+              paddingTop: '48px',
             }}
           >
-            <Box 
-              sx={{ 
-                p: 2, 
-                flex: '0 0 auto', 
-                position: 'sticky', 
-                top: 64,
-                zIndex: 1,
-                backgroundColor: theme.palette.background.default,
-                borderBottom: `1px solid ${theme.palette.divider}`,
-                display: 'flex',
-                justifyContent: 'center',
-              }}
-            >
-              <Select
-                value={selectedDatabase}
-                onChange={(e) => {
-                  setSelectedDatabase(e.target.value);
-                  const currentChat = chats.find(c => c.id === currentChatId);
-                  if (currentChat) {
-                    const updatedChats = chats.map(chat => 
-                      chat.id === currentChatId ? { ...chat, name: e.target.value, database: e.target.value } : chat
-                    );
-                    saveChats(updatedChats);
-                  }
-                }}
-                displayEmpty
-                sx={{ 
-                  width: selectWidth,
-                  backgroundColor: theme.palette.background.paper,
-                  '&:hover': {
-                    backgroundColor: theme.palette.action.hover,
-                  },
-                  transition: 'all 0.3s',
-                }}
-              >
-                <MenuItem value="" disabled>Select a database</MenuItem>
-                {databases.map((db) => (
-                  <MenuItem key={db} value={db}>{db}</MenuItem>
-                ))}
-              </Select>
-            </Box>
+            
             <Box 
               ref={queryWorkspaceRef}
               sx={{ 
@@ -718,7 +736,7 @@ export default function ProfessionalAIDatabaseAssistant({ connectionInfo, setIsL
                 onClick={handleSendMessage}
                 disabled={loading || !inputQuery.trim() || !selectedDatabase}
                 sx={{
-                  transition: 'background-color 0.3s, transform 0.1s',
+                  transition: 'all 0.3s ease',
                   '&:hover': {
                     transform: 'scale(1.05)',
                   },
@@ -731,7 +749,7 @@ export default function ProfessionalAIDatabaseAssistant({ connectionInfo, setIsL
               </Button>
             </Box>
           </Box>
-          {showScrollButton && (
+          <Zoom in={showScrollButton}>
             <Fab
               color="primary"
               size="small"
@@ -740,7 +758,7 @@ export default function ProfessionalAIDatabaseAssistant({ connectionInfo, setIsL
                 position: 'fixed', 
                 bottom: 90, 
                 right: 16,
-                transition: 'transform 0.3s',
+                transition: 'all 0.3s ease',
                 '&:hover': {
                   transform: 'scale(1.1)',
                 },
@@ -748,7 +766,7 @@ export default function ProfessionalAIDatabaseAssistant({ connectionInfo, setIsL
             >
               <ArrowDownwardIcon />
             </Fab>
-          )}
+          </Zoom>
         </Box>
       </Box>
       <Snackbar
@@ -789,3 +807,4 @@ export default function ProfessionalAIDatabaseAssistant({ connectionInfo, setIsL
     </ThemeProvider>
   );
 }
+

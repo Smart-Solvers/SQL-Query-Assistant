@@ -135,7 +135,7 @@ const LoginPage = ({ setIsLoggedIn, setConnectionInfo }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('https://query-assistant-7ggafgab6-pragnias-projects.vercel.app/login', { host, username, password });
+      await axios.post('http://localhost:8000/login', { host, username, password });
       setIsLoggedIn(true);
       setConnectionInfo({ host, username, password });
       setSnackbarMessage('Login successful!');

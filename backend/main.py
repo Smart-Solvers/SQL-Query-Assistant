@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 # custom
-from src.database import get_databases, get_db, post_database
+from src.database import get_databases, get_database_connection, post_database
 from src.schemas import QueryRequest, QueryResponse, LoginRequest
 from src.services.query_service import QueryService
 from src.services.llm_service import generate_sql_query
@@ -16,7 +16,7 @@ security = HTTPBasic()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://query-assistant-7ggafgab6-pragnias-projects.vercel.app/"],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -25,12 +25,11 @@ app.add_middleware(
 @app.post("/login")
 async def login(login_request: LoginRequest):
     try:
-        # connection = get_database_connection(
-        #     login_request.host,
-        #     login_request.username,
-        #     login_request.password
-        # )
-        connection = get_db()
+        connection = get_database_connection(
+            login_request.host,
+            login_request.username,
+            login_request.password
+        )
         connection.close()
         return {"message": "Login successful"}
     except Exception as e:
@@ -48,8 +47,7 @@ async def list_databases(credentials: HTTPBasicCredentials = Depends(security)):
 async def query_data(request: QueryRequest, credentials: HTTPBasicCredentials = Depends(security),
                      x_host: str = Header(..., alias="X-Host")):
     try:
-        # db = get_database_connection(x_host, credentials.username, credentials.password, request.database)
-        db = get_db()
+        db = get_database_connection(x_host, credentials.username, credentials.password, request.database)
         query_service = QueryService(db)
 
         generated_query = generate_sql_query(request.query, request.database, {
