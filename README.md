@@ -7,7 +7,8 @@
 cd backend
 ```
 
-```pip install -r requirements.txt
+```
+pip install -r requirements.txt
 ```
 
 ## To run using Streamlit
