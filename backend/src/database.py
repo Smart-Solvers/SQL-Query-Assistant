@@ -1,5 +1,6 @@
 # 3rd party
 import pymysql
+from fastapi.security import HTTPBasicCredentials
 
 # custom
 from src.config.log_handler import logger
@@ -63,3 +64,34 @@ def get_database_schema(database, host, user, password):
     finally:
         connection.close()
     return schema
+
+def post_database(
+    host: str,
+    credentials: HTTPBasicCredentials,
+    database: str,
+    user_query: str,
+    processed_query: str,
+    response: str,
+):
+    try:
+        response = str(response)
+        connection = get_database_connection(
+            host, credentials.username, credentials.password, database
+        )
+        with connection.cursor() as cursor:
+            sql = """
+            INSERT INTO sql_assistant.query_table (user_name, user_input, processed_query, response)
+            VALUES (%s, %s, %s, %s)
+            """
+            cursor.execute(
+                sql,
+                (credentials.username, user_query, processed_query, response),
+            )
+            connection.commit()
+
+    except pymysql.MySQLError as e:
+        logger.log_info(f"Insertion failed, chat skipped!! {e}")
+        return
+
+    finally:
+        connection.close()

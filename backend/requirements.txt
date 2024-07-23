@@ -3,10 +3,5 @@ uvicorn
 pymysql
 pydantic
 python-dotenv
-transformers
-torch
-streamlit
 pandas
 requests
-plotly
-streamlit_option_menu

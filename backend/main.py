@@ -1,8 +1,11 @@
+# 3rd party
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from src.database import get_databases, get_database_connection
-from src.schemas import QueryRequest, QueryResponse, LoginRequest, DatabaseConnectionInfo
+
+# custom
+from src.database import get_databases, get_database_connection, post_database
+from src.schemas import QueryRequest, QueryResponse, LoginRequest
 from src.services.query_service import QueryService
 from src.services.llm_service import generate_sql_query
 from src.utils.preprocessing import preprocess_query
@@ -27,7 +30,6 @@ async def login(login_request: LoginRequest):
             login_request.username,
             login_request.password
         )
-        print(connection)
         connection.close()
         return {"message": "Login successful"}
     except Exception as e:
@@ -54,15 +56,20 @@ async def query_data(request: QueryRequest, credentials: HTTPBasicCredentials = 
             "password": credentials.password
         })
 
-        processed_query = preprocess_query(generated_query)
+        processed_query: str = preprocess_query(generated_query)
 
         response = query_service.get_data(processed_query)
+
+        post_database(
+            x_host,
+            credentials,
+            request.database,
+            request.query,
+            processed_query,
+            response
+        )
 
         return QueryResponse(sql_query=processed_query, response=response)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
